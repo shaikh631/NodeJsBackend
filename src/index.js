@@ -10,4 +10,4 @@ ConnectDB()
 })
 .catch((error) => {
     console.log(`MonogoDB Connection Failed !!! ${error}`);
-})
+}) 
