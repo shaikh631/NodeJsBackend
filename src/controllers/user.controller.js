@@ -311,6 +311,81 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
     )
 })
 
+const getUserChannelProfile = asyncHandler(async ( res , req) => {
+    const {username} = req.params;
+
+    if(!username?.trim()){
+        throw new ApiError(400 , "User is Missing")
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match:{
+                username : username
+            }
+        },
+        // Subscriper
+        {
+            $lookup: {
+                from:"subscriptions",
+                localField:"_id",
+                foreignField:"channel",
+                as:"subscribers"
+
+            }
+        },
+        // Channel 
+        {
+            $lookup:{
+                from:"subscriptions",
+                localField:"_id",
+                foreignField:"subscriber",
+                as : "subscribedTo "
+            }
+        },
+        // Size of subscriber and SubscribedTo
+        {
+            $addFields:{
+                subscribersCount : {
+                    $size : "$subscribers"
+                },
+                 ChannelsSubscribedToCount : {
+                    $size : "$subscribedTo"
+                },
+                isSubscribed:{
+                    $cond : {
+                        if:{$in :[req.user?._id , "$subscribers.subscriber"]},
+                        then : true,
+                        else : false
+                    }
+                }
+
+            }
+        },
+        {
+            $project:{
+                fullName: 1,
+                username: 1, 
+                subscribersCount: 1,
+                ChannelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                coverImage: 1,
+                avatar: 1,
+                email: 1
+
+            }
+        }
+
+    ])
+
+    if(!channel?.length){
+        throw new ApiError(404 , "Channel doesn't Exists")
+    }
+
+    return res.status(200)
+    .json(new ApiError(200 , channel[0], "User Channel fetched Success"))
+     
+})
 export {resgisterUser , loginUser ,
      logout, refreshAccessToken ,
      changeCurrentPassword , getCurrentUser,
