@@ -4,7 +4,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
-import { emissive } from "three/tsl";
 import mongoose from "mongoose";
 
 const generateAccessAndRefreshTokens = async (userId) => {
