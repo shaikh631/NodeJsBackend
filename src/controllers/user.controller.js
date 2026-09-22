@@ -244,6 +244,7 @@ const UpdateAccountDetails = asyncHandler(async (res , req ) => {
 
 })
 
+
 const updateUserAvatar = asyncHandler(async(req, res) => {
     const avatarLocalPath = req.file?.path
 
@@ -309,6 +310,16 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
     .json(
         new ApiResponse(200, user, "Cover image updated successfully")
     )
+})
+
+const deleteUserAccount = asyncHandler(async (req , res) => {
+    const user = await User.findByIdAndDelete(req.user?._id).select("-password")
+
+    if(!user){
+        throw new APiError(404 , "User Not Found")
+    }
+    return res.status(200)
+    .json(new ApiResponse(200 , user , "User Account Deleted Successfully"))
 })
 
 const getUserChannelProfile = asyncHandler(async ( res , req) => {
@@ -387,59 +398,13 @@ const getUserChannelProfile = asyncHandler(async ( res , req) => {
      
 })
 
-const getWatchHistory = asyncHandler(async (req , res) => {
-    const user = User.aggregate([
-        {
-            $match:{
-                _id: mongoose.Types.ObjectId(req.user?._id),
-            }
-        },
-        {
-            $lookup:{
-                from:"vedios",
-                localField:"watchHistory",
-                foreignField:"_id",
-                as :"watchHistory",
-                pipeline:[
-                    {
-                        $lookup:{
-                            from:"user",
-                            localField:"owner",
-                            foreignField:"_id",
-                            as:"owner",
-                            pipeline:[
-                                {
-                                    $project:{
-                                        username: 1,
-                                        fullName:1,
-                                        avatar:1
 
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    {
-                         $addFields :{
-                            owner : {
-                                $first :"$owner"
-                                }
-                            }
-                    }
-                ]
-            }
-        },
-    ])
 
-    return res.status(200)
-    .json(new ApiError(200 , user[0].watchHistory , "Watch History fetch successfully..."))
-})
-
-export {resgisterUser , loginUser ,
-     logout, refreshAccessToken ,
+export {resgisterUser, loginUser,
+     logout, refreshAccessToken,
      changeCurrentPassword , getCurrentUser,
-     UpdateAccountDetails, updateUserAvatar ,
-     updateUserCoverImage ,getUserChannelProfile,
-     getWatchHistory
-
+     UpdateAccountDetails, updateUserAvatar,
+    updateUserCoverImage ,getUserChannelProfile,
+    deleteUserAccount,
+     
 }

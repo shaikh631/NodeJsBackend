@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const playlistSchema = new mongoose.Schema({
-    name:{
+    playlistName:{
         type : String ,
         required : true
     },
